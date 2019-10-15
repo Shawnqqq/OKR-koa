@@ -13,6 +13,9 @@ class Base{
   where(params){
     return knex(this.table).where(params)
   }
+  whereIn(key,arr){
+    return knex(this.table).whereIn(key,arr)
+  }
   insert(params){
     return knex(this.table).insert(params)
   }

@@ -1,5 +1,7 @@
 const objectiveModels = require('../models/objetive');
 const keyresultModels = require('../models/keyresult');
+const todo_keyresultModels = require('../models/todo_keyresult');
+const todoModels = require('../models/todo');
 const {formatTime} = require('../utils/formatDate');
 
 const okrController = {
@@ -75,6 +77,7 @@ const okrController = {
         .where({'objective.id':id})
         .leftJoin('keyresult','keyresult.objective_id','objective.id')
         .column('keyresult.id',{'obText':'objective.text'},{'krText':'keyresult.text'})
+
       ctx.body={
         code:200,
         data:okr
@@ -126,6 +129,112 @@ const okrController = {
       ctx.body={
         code:200,
         message:'删除成功'
+      }
+    }catch(err){
+      console.log(err)
+      ctx.body={
+        code:0,
+        message:'服务器错误'
+      }
+    }
+  },
+  completeKr: async(ctx,next) =>{
+    try{
+      let id = ctx.params.id
+      await keyresultModels.update(id,{state:2})
+      ctx.body={
+        code:200,
+        message:'修改成功'
+      }
+    }catch(err){
+      console.log(err)
+      ctx.body={
+        code:0,
+        message:'服务器错误'
+      }
+    }
+  },
+  deletedKr: async(ctx,next) =>{
+    try{
+      let id = ctx.params.id
+      await keyresultModels.deleted(id);
+      ctx.body={
+        code:200,
+        message:'删除成功'
+      }
+    }catch(err){
+      console.log(err)
+      ctx.body={
+        code:0,
+        message:'服务器错误'
+      }
+    }
+  },
+  okrTodo:async (ctx,next) =>{
+    try{
+      let id = ctx.query.id
+      let ob = await objectiveModels.where({id})
+      let kr = await objectiveModels
+        .where({'objective.id':id})
+        .leftJoin('keyresult','keyresult.objective_id','objective.id')
+        .column({'krId':'keyresult.id'},{'krText':'keyresult.text'},{'krState':'keyresult.state'})
+      
+      let krId = kr.map(data =>{
+        return data.krId
+      })
+      
+      let todoIds = await todo_keyresultModels.whereIn('keyresult_id',krId);
+      let todoId = todoIds.map(data =>{
+        return data.todo_id
+      })
+      let todo = await todoModels.whereIn('id',todoId);
+
+      let data = []
+      for(let k=0;k<kr.length;k++){
+        data.push({krData:kr[k],todo:[]})
+        for(let i=0;i<todoIds.length;i++){
+          if(kr[k].krId == todoIds[i].keyresult_id){
+            let todoId = todoIds[i].todo_id
+            for(let t=0;t<todo.length;t++){
+              if(todoId == todo[t].id){
+                data[k].todo.push(todo[t])
+              }
+            }
+          }
+        }
+      }
+
+      // let objectives = await Objective.select({ id });
+      // let objective = objectives[0];
+      // let keyresults = await Keyresult.select({ objective_id: id });
+      // objective.created_time = formate.formatTime(objective.created_time);
+      // if(objective.finished_time){
+      //   objective.finished_time = formate.formatTime(objective.finished_time);
+      // }
+      // let keyresult_ids = keyresults.map( data => data.id);
+      // let todoKeyresults = await TodoKeyresult.knex()
+      //   .whereIn('keyresult_id', keyresult_ids)
+      //   .leftJoin('todo','todo_keyresult.todo_id','todo.id')
+      //   .select({id: 'todo.id'},'todo_keyresult.keyresult_id','todo.title','todo.status')
+
+      // let keyresultTmp = {}
+      // keyresults.forEach(data => {
+      //   data.todos = []
+      //   keyresultTmp[data.id] = data;
+      // })
+      // todoKeyresults.forEach(data =>{
+      //   keyresultTmp[data.keyresult_id].todos.push(data);
+      // })
+      // objective.keyresults = Object.values(keyresults);
+      // ctx.state.code = 200;
+      // ctx.state.data.okr = objective;
+
+
+
+      ctx.body={
+        code:200,
+        obData:ob[0],
+        krData:data
       }
     }catch(err){
       console.log(err)

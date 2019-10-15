@@ -6,6 +6,7 @@ const cors = require('./../middlewares/cors');
 const userController = require('../controllers/user');
 const todoController = require('../controllers/todo');
 const okrController = require('../controllers/okr');
+const todo_keyresultController = require('../controllers/todo_keyresult')
 
 // 小程序登录
 apiRouter.get('/login', cors.allowAll,userController.login)
@@ -27,6 +28,16 @@ apiRouter.put('/okr/:id', cors.allowAll,okrController.complete)
 apiRouter.get('/okrSingle', cors.allowAll,okrController.okr)
 apiRouter.put('/okrSingle/:id', cors.allowAll,okrController.edit)
 apiRouter.delete('/okr/:id', cors.allowAll,okrController.deleted)
+apiRouter.get('/okrTodo', cors.allowAll,okrController.okrTodo)
+
+// KR
+apiRouter.put('/kr/:id', cors.allowAll,okrController.completeKr)
+apiRouter.delete('/kr/:id', cors.allowAll,okrController.deletedKr)
+
 
 // todoKeyresult
+apiRouter.get('/todoKeyresult', cors.allowAll,todo_keyresultController.keyresult);
+apiRouter.post('/todoKeyresult', cors.allowAll,todo_keyresultController.bind);
+apiRouter.delete('/todoKeyresult', cors.allowAll,todo_keyresultController.deleted);
+
 module.exports = apiRouter
