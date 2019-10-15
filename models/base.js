@@ -22,6 +22,9 @@ class Base{
   deleted(id){
     return knex(this.table).where('id','=',id).del()
   }
+  insertReturn(params){
+    return knex(this.table).returning('id').insert(params)
+  }
 }
 
 module.exports = Base

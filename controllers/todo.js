@@ -77,7 +77,6 @@ const todoController = {
     try{
       let user_id = ctx.query.user_id;
       let todo = await todoModels.where({user_id,state:2});
-      console.log(todo)
       todo.forEach( data =>{
         data.created_time = formatTime(data.created_time)
         data.end_time = formatTime(data.end_time)
